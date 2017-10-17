@@ -87,7 +87,7 @@ pub fn get_computer_name() -> Option<String> {
     };
 }
 
-/// Return an Option containing the user associated with the current thread.
+/// Return an Option containing the user associated with the current process.
 ///
 pub fn get_user_name() -> Option<String> {
     const UNLEN: usize = 256;
