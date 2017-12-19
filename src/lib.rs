@@ -1,6 +1,9 @@
 extern crate winapi;
-extern crate kernel32;
-extern crate advapi32;
+
+use winapi::um::wow64apiset::IsWow64Process;
+use winapi::um::processthreadsapi::GetCurrentProcess;
+use winapi::um::winbase::{GetComputerNameA, GetUserNameA};
+use winapi::um::winnt::CHAR;
 
 #[cfg(test)]
 mod test {
@@ -20,7 +23,7 @@ mod test {
         match get_computer_name() {
             Some(_) => assert!(true),
             None => assert!(false),
-        }
+        };
     }
 
     #[test]
@@ -49,7 +52,7 @@ pub fn is_wow64_process<'a>() -> Result<bool, WinUtilError<'a>> {
     let is_wow_ptr = &mut is_wow as *mut i32;
 
     unsafe {
-        match kernel32::IsWow64Process(kernel32::GetCurrentProcess(), is_wow_ptr) {
+        match IsWow64Process(GetCurrentProcess(), is_wow_ptr) {
             0 => Err(WinUtilError::IsWow64ProcessError("returned 0")),
             _ => {
                 match *is_wow_ptr {
@@ -67,11 +70,11 @@ pub fn is_wow64_process<'a>() -> Result<bool, WinUtilError<'a>> {
 pub fn get_computer_name() -> Option<String> {
     const MAX_COMPUTERNAME_LENGTH: usize = 15;
 
-    let mut buf = [0 as winapi::CHAR; MAX_COMPUTERNAME_LENGTH + 1];
+    let mut buf = [0 as CHAR; MAX_COMPUTERNAME_LENGTH + 1];
     let mut len = buf.len() as u32;
 
     unsafe {
-        if kernel32::GetComputerNameA(buf.as_mut_ptr(), &mut len) == 0 {
+        if GetComputerNameA(buf.as_mut_ptr(), &mut len) == 0 {
             return None;
         };
     }
@@ -92,11 +95,11 @@ pub fn get_computer_name() -> Option<String> {
 pub fn get_user_name() -> Option<String> {
     const UNLEN: usize = 256;
 
-    let mut buf = [0 as winapi::CHAR; UNLEN + 1];
+    let mut buf = [0 as CHAR; UNLEN + 1];
     let mut len = buf.len() as u32;
 
     unsafe {
-        if advapi32::GetUserNameA(buf.as_mut_ptr(), &mut len) == 0 {
+        if GetUserNameA(buf.as_mut_ptr(), &mut len) == 0 {
             return None;
         };
     }
